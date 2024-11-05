@@ -38,7 +38,11 @@ void SwapBackgrounds()
 
 ![Descripción de la imagen](images/1.1.gif)
 
+*Figura 1: Desplazamiento del fondo en la escena*
+
 ![Descripción de la imagen](images/1.gif)
+
+*Figura 2: Desplazamiento del fondo en el juego*
 
 ## Tarea 2: Aplicar un fondo con scroll a tu escena utilizando la técnica descrita en b.
 
@@ -81,6 +85,8 @@ void SwapBackgrounds()
 
 ![Descripción de la imagen](images/2.gif)
 
+*Figura 3: Desplazamiento de la camara de juego*
+
 ## Tarea 3: Aplicar un fondo a tu escena aplicando la técnica del desplazamiento de textura
 
 En esta actividad el fondo se moverá aplicando el desplazamiento de textura, la camara y el fondo se quedarán en la misma posición. 
@@ -103,6 +109,8 @@ void Update()
 ```
 
 ![Descripción de la imagen](images/3.gif)
+
+*Figura 4: Desplazamiento de textura*
 
 ## Tarea 4: Aplicar efecto parallax usando la técnica de scroll en la que se mueve continuamente la posición del fondo.
 
@@ -143,6 +151,8 @@ void Update()
 
 ![Descripción de la imagen](images/4.gif)
 
+*Figura 5: Efecto parallax usando la técnica scroll*
+
 ## Tarea 5: Aplicar efecto parallax actualizando el offset de la textura.
 
 En la actividad anterior, el desplazamiento de las texturas se mantenía uniforme; sin embargo, en el script desarollado en esta actividad, las capas de fondo que están más cerca del jugador se mueven más rápidamente que las que están más atrás.
@@ -179,6 +189,8 @@ void Update()
 
 ![Descripción de la imagen](images/5.gif)
 
+*Figura 6: Efecto parallax actualizando el offset*
+
 ## Tarea 6
 
 ### Enunciado
@@ -187,4 +199,42 @@ En tu escena 2D crea un prefab que sirva de base para generar un tipo de objetos
 
 ### Resolución
 
+En esta actividad, esarrollé un sistema de pooling en Unity 2D. Este sistema mantiene una cantidad fija de objetos en la escena, reciclando aquellos que ya han sido usados y eliminando de la memoria los que alcanzan un límite de recolección. Los scr ipts `EnemyPooling.cs` y `CollectObjectFromPool.cs` gestionan el ciclo de vida y el comportamiento de los objetos recolectables.
+
+Además de los scripts, creé un prefab de un enemigo utilizando un sprite diseñado que se parece a un pulpo (Figura 6) para la recolección de objetos del pool. Este prefab incluye un `Box Collider 2D`, un `Rigidbody 2D` y una referencia al script `CollectObjectFromPool.cs`.
+
+![Descripción de la imagen](images/6.png)
+
+#### 1. Script `EnemyPooling.cs`
+
+Este script funciona como administrador del pool de objetos y controla la activación, reciclaje y destrucción de los objetos recolectables en la escena. 
+
+- **Inicialización del Pool**: Durante la ejecución, el script crea una cantidad determinada de objetos (según el parámetro `poolSize`) y los desactiva, almacenándolos en una lista llamada `pool`. Estos objetos se mantendrán inactivos hasta ser necesarios en la escena.
+
+- **Activación Controlada de Objetos**: El método `Update()` revisa cuántos objetos recolectables están activos en la escena. Si el número de objetos activos es inferior al límite permitido (`activeObjectLimit`), se activan más objetos desde el pool y se colocan en posiciones aleatorias en la escena.
+
+- **Destrucción de Objetos**: Si un objeto ha sido recolectado tres veces, el método `RemoveAndDestroyObject()` lo elimina tanto del pool como de la escena, liberando memoria y asegurando que no haya referencias activas al mismo. Este evento es registrado en el script `CollectObjectFromPool.cs`.
+
+#### 2. Script `CollectObjectFromPool.cs`
+
+Este script se adjunta a cada pulpo recolectable y gestiona la lógica de recogida, contabilizando cuántas veces ha sido recolectado.
+
+- **Contador de Recolecciones**: Cada vez que el objeto es recogido en la escena, el método `OnPickedUp()` incrementa el contador `pickUpCount`. Si este contador alcanza el límite de 3 recolecciones, el objeto se envía al `ObjectPoolManager` para ser eliminado del pool y destruido.
+
+- **Reutilización del Objeto**: Si el contador no ha alcanzado el límite, el objeto simplemente se desactiva para ser reutilizado más adelante en la escena, optimizando el uso de memoria y procesamiento.
+
+#### Algunas consideraciones
+
+1. **Evitación de Errores de Referencia**: Para evitar errores como `MissingReferenceException`, los objetos no se destruyen directamente en el script `Collectible.cs`. En su lugar, `ObjectPoolManager` se encarga de la eliminación, asegurando que el pool esté siempre actualizado.
+
+Este sistema de pooling es eficiente y reduce la carga de instanciar y destruir objetos continuamente, mejorando así el rendimiento de la aplicación. Además, garantiza un uso óptimo de los recursos al eliminar aquellos objetos que alcanzan su límite de recolección, manteniendo la memoria libre de referencias innecesarias. 
+
+![Descripción de la imagen](images/6.gif)
+
+*Figura 7: Jugador recogiendo objetos del pool*
+
 ## Tarea 7: Revisa tu código de la entrega anterior e indica las mejoras que podrías hacer de cara al rendimiento.
+
+Al revisar los scripts de la práctica anterior, he notado que, en general, no presentan grandes problemas de rendimiento. Sin embargo, he identificado algunas optimizaciones que podrían mejorarse. Por ejemplo, en el script de `PlayerMovement`, en lugar de utilizar `GetComponent`, sería más eficiente emplear `SerializeField` en los atributos privados del script.
+
+Existen otras mejoras que podrían implementarse en proyectos futuros, aunque en esta práctica no fueron necesarias. Por ejemplo, la creación de **prefabs** para los niveles no resultó relevante, ya que no era necesario construir niveles adicionales para este caso.
